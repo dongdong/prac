@@ -1,0 +1,9 @@
+total 264
+-rw-r--r--  1 dongdong  staff     495  4 26 00:36 Main.cc
+-rw-r--r--  1 dongdong  staff     203  4 25 23:21 Makefile
+-rw-r--r--  1 dongdong  staff     482  4 26 00:25 QueryResult.cc
+-rw-r--r--  1 dongdong  staff     584  4 26 00:26 QueryResult.h
+-rwxr-xr-x  1 dongdong  staff  110176  4 26 00:36 TextQuery
+-rw-r--r--  1 dongdong  staff     733  4 26 00:35 TextQuery.cc
+-rw-r--r--  1 dongdong  staff     477  4 26 00:29 TextQuery.h
+-rw-r--r--  1 dongdong  staff       0  4 26 00:38 infile1.txt
