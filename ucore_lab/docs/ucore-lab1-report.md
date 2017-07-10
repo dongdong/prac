@@ -1,37 +1,46 @@
-## Prac1£ºmake
+## Prac1ï¼šmake
 
-#### 1.1 ucore.imgÈçºÎÉú³É?
+#### 1.1 ucore.imgå¦‚ä½•ç”Ÿæˆ?
 
-> $ make "V="  # ´òÓ¡makeÖ´ÐÐÁËÄÄÐ©ÃüÁî
+> $ make "V="  # æ‰“å°makeæ‰§è¡Œäº†å“ªäº›å‘½ä»¤
 
-1. ±àÒëÉú³Ékernel
+1. ç¼–è¯‘ç”Ÿæˆkernel
 
-* ±àÒëÉú³ÉËùÒÀÀµµÄ.oÎÄ¼þ
-* Á´½Ó.oÎÄ¼þ£¬Éú³É¿ÉÖ´ÐÐÎÄ¼þkernel
+	* ç¼–è¯‘ç”Ÿæˆæ‰€ä¾èµ–çš„.oæ–‡ä»¶
+	* é“¾æŽ¥.oæ–‡ä»¶ï¼Œç”Ÿæˆå¯æ‰§è¡Œæ–‡ä»¶kernel
 
 ```
 ...
 
 + ld bin/kernel
-ld -m    elf_i386 -nostdlib -T tools/kernel.ld -o bin/kernel  obj/kern/init/init.o obj/kern/libs/readline.o obj/kern/libs/stdio.o obj/kern/debug/kdebug.o obj/kern/debug/kmonitor.o obj/kern/debug/panic.o obj/kern/driver/clock.o obj/kern/driver/console.o obj/kern/driver/intr.o obj/kern/driver/picirq.o obj/kern/trap/trap.o obj/kern/trap/trapentry.o obj/kern/trap/vectors.o obj/kern/mm/pmm.o  obj/libs/printfmt.o obj/libs/string.o
+ld -m elf_i386 -nostdlib -T tools/kernel.ld -o bin/kernel  obj/kern/init/init.o 
+	obj/kern/libs/readline.o obj/kern/libs/stdio.o obj/kern/debug/kdebug.o 
+	obj/kern/debug/kmonitor.o obj/kern/debug/panic.o obj/kern/driver/clock.o 
+	obj/kern/driver/console.o obj/kern/driver/intr.o obj/kern/driver/picirq.o 
+	obj/kern/trap/trap.o obj/kern/trap/trapentry.o obj/kern/trap/vectors.o 
+	obj/kern/mm/pmm.o  obj/libs/printfmt.o obj/libs/string.o
 ```
 
-2. ±àÒëÉú³Ébootblock
-* ±àÒëÉú³ÉËùÒÀÀµµÄ.oÎÄ¼þ
-* Á´½Ó.oÎÄ¼þ£¬Éú³Ébootblock.oÎÄ¼þ
-* Í¨¹ýobjcopy£¬½«bootblock.o×ª»»Îªbootblock.outÎÄ¼þ£¨objcopy -S -O binary, remove all symbols and relocation information, and then generate binary file£©
-* Í¨¹ýsign£¬½«bootblock.out×ª»»³ÉbootblockÎÄ¼þ
+2. ç¼–è¯‘ç”Ÿæˆbootblock
+
+	* ç¼–è¯‘ç”Ÿæˆæ‰€ä¾èµ–çš„.oæ–‡ä»¶
+	* é“¾æŽ¥.oæ–‡ä»¶ï¼Œç”Ÿæˆbootblock.oæ–‡ä»¶
+	* é€šè¿‡objcopyï¼Œå°†bootblock.oè½¬æ¢ä¸ºbootblock.outæ–‡ä»¶ï¼ˆobjcopy -S -O binary, remove all symbols and relocation information, and then generate binary fileï¼‰
+	* é€šè¿‡signï¼Œå°†bootblock.outè½¬æ¢æˆbootblockæ–‡ä»¶
 
 ```
 + cc boot/bootasm.S
-gcc -Iboot/ -fno-builtin -Wall -ggdb -m32 -gstabs -nostdinc  -fno-stack-protector -Ilibs/ -Os -nostdinc -c boot/bootasm.S -o obj/boot/bootasm.o
+gcc -Iboot/ -fno-builtin -Wall -ggdb -m32 -gstabs -nostdinc  -fno-stack-protector 
+	-Ilibs/ -Os -nostdinc -c boot/bootasm.S -o obj/boot/bootasm.o
 + cc boot/bootmain.c
-gcc -Iboot/ -fno-builtin -Wall -ggdb -m32 -gstabs -nostdinc  -fno-stack-protector -Ilibs/ -Os -nostdinc -c boot/bootmain.c -o obj/boot/bootmain.o
+gcc -Iboot/ -fno-builtin -Wall -ggdb -m32 -gstabs -nostdinc  -fno-stack-protector 
+	-Ilibs/ -Os -nostdinc -c boot/bootmain.c -o obj/boot/bootmain.o
 + cc tools/sign.c
 gcc -Itools/ -g -Wall -O2 -c tools/sign.c -o obj/sign/tools/sign.o
 gcc -g -Wall -O2 obj/sign/tools/sign.o -o bin/sign
 + ld bin/bootblock
-ld -m    elf_i386 -nostdlib -N -e start -Ttext 0x7C00 obj/boot/bootasm.o obj/boot/bootmain.o -o obj/bootblock.o
+ld -m elf_i386 -nostdlib -N -e start -Ttext 0x7C00 obj/boot/bootasm.o 
+	obj/boot/bootmain.o -o obj/bootblock.o
 objdump -S obj/bootblock.o > obj/bootblock.asm
 objcopy -S -O binary obj/bootblock.o obj/bootblock.out
 bin/sign obj/bootblock.out bin/bootblock
@@ -39,10 +48,10 @@ bin/sign obj/bootblock.out bin/bootblock
 build 512 bytes boot sector: 'bin/bootblock' success!
 ```
 
-3. Éú³Éucore.img
+3. ç”Ÿæˆucore.img
 
-* Ê¹ÓÃddÃüÁî£¬½«/dev/zero, bootblock, kernel¿½±´Éú³Éucore.img
-* [dd](http://www.cnblogs.com/dkblog/archive/2009/09/18/1980715.html)
+	* ä½¿ç”¨ddå‘½ä»¤ï¼Œå°†/dev/zero, bootblock, kernelæ‹·è´ç”Ÿæˆucore.img
+	* [dd](http://www.cnblogs.com/dkblog/archive/2009/09/18/1980715.html)
 
 ```
 dd if=/dev/zero of=bin/ucore.img count=10000
@@ -60,39 +69,39 @@ dd if=bin/kernel of=bin/ucore.img seek=1 conv=notrunc
 ```
 
 
-#### 1.2 Ó²ÅÌÖ÷Òýµ¼ÉÈÇøµÄÌØÕ÷
+#### 1.2 ç¡¬ç›˜ä¸»å¼•å¯¼æ‰‡åŒºçš„ç‰¹å¾
 
-ÓÉÉÏ¿ÉÖª£¬Ó²ÅÌÖ÷Òýµ¼ÉÈÇøÎÄ¼þÓÉsign¹¤¾ßÉú³É£º
+* ç”±ä¸Šå¯çŸ¥ï¼Œç¡¬ç›˜ä¸»å¼•å¯¼æ‰‡åŒºæ–‡ä»¶ç”±signå·¥å…·ç”Ÿæˆï¼š
 
 > sign bootblock.out bootblock
 
-Í¨¹ýÔÄ¶Ásign.cÔ´ÎÄ¼þ¿ÉÖª£º
+* é€šè¿‡é˜…è¯»sign.cæºæ–‡ä»¶å¯çŸ¥ï¼š
 
-* ÊäÈëÎÄ¼þ²»ÄÜ´óÓÚ510×Ö½Ú
-* Ö÷Òýµ¼ÉÈÇø´óÐ¡Îª512×Ö½Ú£¬ÇÒÒÔ55AA½áÊø
+	* è¾“å…¥æ–‡ä»¶ä¸èƒ½å¤§äºŽ510å­—èŠ‚
+	* ä¸»å¼•å¯¼æ‰‡åŒºå¤§å°ä¸º512å­—èŠ‚ï¼Œä¸”ä»¥55AAç»“æŸ
 
 ```
 buf[510] = 0x55;
 buf[511] = 0xAA;
 ```
 
-## Prac2£ºÊ¹ÓÃqemuÖ´ÐÐ²¢µ÷ÊÔ
+## Prac2ï¼šä½¿ç”¨qemuæ‰§è¡Œå¹¶è°ƒè¯•
 
-#### 2.1 µ÷ÊÔbootloaderµÄ·½·¨
+#### 2.1 è°ƒè¯•bootloaderçš„æ–¹æ³•
 
-1. µ÷ÊÔ·½Ê½Æô¶¯qemu
+1. è°ƒè¯•æ–¹å¼å¯åŠ¨qemu
 
 ```
 qemu-system-i386 -S -s -d in_asm -D bin/q.log -monitor stdio -hda bin/ucore.img -serial null
 ```
 
-2. Æô¶¯gdb£¬²¢ÉèÖÃ¶Ïµãµ½0x7c00´¦
+2. å¯åŠ¨gdbï¼Œå¹¶è®¾ç½®æ–­ç‚¹åˆ°0x7c00å¤„
 
 ```
 gdb -q -x tools/lab1init
 ```
 
-lab1initÄÚÈÝ£º
+lab1initå†…å®¹ï¼š
 
 ```
 file bin/kernel
@@ -104,17 +113,18 @@ x /2i $pc
 ```
 
 
-## Prac3£º·ÖÎöbootloader½øÈë±£»¤Ä£Ê½µÄ¹ý³Ì
+## Prac3ï¼šåˆ†æžbootloaderè¿›å…¥ä¿æŠ¤æ¨¡å¼çš„è¿‡ç¨‹
 
-#### 3.1 ÎªºÎ¿ªÆôA20£¬ÒÔ¼°ÈçºÎ¿ªÆôA20
+#### 3.1 ä¸ºä½•å¼€å¯A20ï¼Œä»¥åŠå¦‚ä½•å¼€å¯A20
 
-A20
-* A20µÄ³öÏÖÊÇÎªÁË¼æÈÝÔçÆÚµÄ8086 CPUµÄ20Î»×ÜÏßµÄÑ°Ö··½Ê½
-* Æô¶¯Ê±£¬A20µØÖ·Ïß¿ØÖÆÊÇÆÁ±ÎµÄ£¬ÖªµÀÏµÍ³Èí¼þÍ¨¹ýÒ»¶¨µÄIO²Ù×÷È¥´ò¿ªËü
-* µ±A20µØÖ·Ïß¿ØÖÆ½ûÖ¹Ê±£¬³ÌÐò¾ÍÏñÔÚ8086ÖÐÔËÐÐ£¬1MBÒÔÉÏµÄµØÖ·ÊÇ²»¿É·ÃÎÊµÄ
-* ÔÚÊµÄ£Ê½ÏÂ£¬Òª·ÃÎÊ¸ß¶ËÄÚ´æ£¬Õâ¸ö¿ª¹Ø±ØÐë´ò¿ª
+* A20
+	* A20çš„å‡ºçŽ°æ˜¯ä¸ºäº†å…¼å®¹æ—©æœŸçš„8086 CPUçš„20ä½æ€»çº¿çš„å¯»å€æ–¹å¼
+	* å¯åŠ¨æ—¶ï¼ŒA20åœ°å€çº¿æŽ§åˆ¶æ˜¯å±è”½çš„ï¼ŒçŸ¥é“ç³»ç»Ÿè½¯ä»¶é€šè¿‡ä¸€å®šçš„IOæ“ä½œåŽ»æ‰“å¼€å®ƒ
+	* å½“A20åœ°å€çº¿æŽ§åˆ¶ç¦æ­¢æ—¶ï¼Œç¨‹åºå°±åƒåœ¨8086ä¸­è¿è¡Œï¼Œ1MBä»¥ä¸Šçš„åœ°å€æ˜¯ä¸å¯è®¿é—®çš„
+	* åœ¨å®žæ¨¡å¼ä¸‹ï¼Œè¦è®¿é—®é«˜ç«¯å†…å­˜ï¼Œè¿™ä¸ªå¼€å…³å¿…é¡»æ‰“å¼€
+	
 
-ÈçºÎ¿ªÆôA20?
+* å¦‚ä½•å¼€å¯A20?
 
 ```
     # Enable A20:
@@ -139,7 +149,7 @@ seta20.2:
 ```
 
 
-#### 3.2 ÈçºÎ³õÊ¼»¯GDT±í
+#### 3.2 å¦‚ä½•åˆå§‹åŒ–GDTè¡¨
 
 ```
     # Switch from real to protected mode, using a bootstrap GDT
@@ -165,7 +175,7 @@ gdtdesc:
     .long gdt                                       # address gdt
 ```
 
-#### 3.3 ÈçºÎÊ¹ÄÜºÍ½øÈë±£»¤Ä£Ê½
+#### 3.3 å¦‚ä½•ä½¿èƒ½å’Œè¿›å…¥ä¿æŠ¤æ¨¡å¼
 
 ```
 # Jump to next instruction, but in 32-bit code segment.
@@ -188,28 +198,34 @@ protcseg:
     call bootmain
 ```
 
-## Prac4£º·ÖÎöbootloader¼ÓÔØELF¸ñÊ½OSµÄ¹ý³Ì
 
-#### 4.1 bootloaderÈçºÎ¶ÁÈ¡Ó²ÅÌÉÈÇø£¿
 
-* bootloader·ÃÎÊÓ²ÅÌ²ÉÓÃLBAÄ£Ê½µÄPIO£¨Program IO£©·½Ê½£¬¼´ËùÓÐµÄIO²Ù×÷ÊÇÍ¨¹ýCPU·ÃÎÊÓ²ÅÌµÄIOµØÖ·¼Ä´æÆ÷Íê³ÉµÄ
+## Prac4ï¼šåˆ†æžbootloaderåŠ è½½ELFæ ¼å¼OSçš„è¿‡ç¨‹
 
-* IOµØÖ·ºÍ¶ÔÓ¦¹¦ÄÜ
-    * 0x1f0£º¶ÁÊý¾Ý£¬µ±0x1f7²»ÎªÃ¦×´Ì¬Ê±£¬¿ÉÒÔ¶Á
-    * 0x1f2£ºÒª¶ÁÐ´µÄÉÈÇøÊý
-    * 0x1f3£ºLBA²ÎÊý0-7Î»
-    * 0x1f4£ºLBA²ÎÊý8-15Î»
-    * 0x1f5£ºLBA²ÎÊý16-23Î»
-    * 0x1f6£º0-3Î»ÎªLBA²ÎÊý24-27Î»£¬µÚ4Î»£º0ÎªÖ÷ÅÌ£¬1Îª´ÓÅÌ
-    * 0x1f7£º×´Ì¬ºÍÃüÁî¼Ä´æÆ÷£¬²Ù×÷Ê±ÏÈ¸øÃüÁî£¬ÔÙ¶ÁÈ¡£»Èç¹û²»ÊÇÃ¦×´Ì¬£¬¾Í´Ó0x1f0¶Ë¿Ú¶ÁÊý¾Ý
+#### 4.1 bootloaderå¦‚ä½•è¯»å–ç¡¬ç›˜æ‰‡åŒºï¼Ÿ
 
-* µ±Ç°Ó²ÅÌÊý¾ÝÊÇ´æ´¢µ½Ó²ÅÌÉÈÇøÖÐ£¬Ò»¸öÉÈÇø´óÐ¡Îª512×Ö½Ú¡£¶ÁÒ»¸öÉÈÇøµÄÁ÷³Ì´óÖÂÈçÏÂ
-    * µÈ´ý´ÅÅÌ×¼±¸ºÃ
-    * ·¢³ö¶ÁÈ¡ÉÈÇøµÄÃüÁî
-    * µÈ´ý´ÅÅÌ×¼±¸ºÃ
-    * °ÑÉÈÇøÊý¾Ý¶Áµ½Ö¸¶¨ÄÚ´æ
+* bootloaderè®¿é—®ç¡¬ç›˜é‡‡ç”¨LBAæ¨¡å¼çš„PIOï¼ˆProgram IOï¼‰æ–¹å¼ï¼Œå³æ‰€æœ‰çš„IOæ“ä½œæ˜¯é€šè¿‡CPUè®¿é—®ç¡¬ç›˜çš„IOåœ°å€å¯„å­˜å™¨å®Œæˆçš„
 
-* boot/bootmain.cÖÐ¶ÔÓ¦´úÂëÊµÏÖ£º
+* IOåœ°å€å’Œå¯¹åº”åŠŸèƒ½
+
+```
+    0x1f0ï¼šè¯»æ•°æ®ï¼Œå½“0x1f7ä¸ä¸ºå¿™çŠ¶æ€æ—¶ï¼Œå¯ä»¥è¯»
+    0x1f2ï¼šè¦è¯»å†™çš„æ‰‡åŒºæ•°
+    0x1f3ï¼šLBAå‚æ•°0-7ä½
+    0x1f4ï¼šLBAå‚æ•°8-15ä½
+    0x1f5ï¼šLBAå‚æ•°16-23ä½
+    0x1f6ï¼š0-3ä½ä¸ºLBAå‚æ•°24-27ä½ï¼Œç¬¬4ä½ï¼š0ä¸ºä¸»ç›˜ï¼Œ1ä¸ºä»Žç›˜
+    0x1f7ï¼šçŠ¶æ€å’Œå‘½ä»¤å¯„å­˜å™¨ï¼Œæ“ä½œæ—¶å…ˆç»™å‘½ä»¤ï¼Œå†è¯»å–ï¼›å¦‚æžœä¸æ˜¯å¿™çŠ¶æ€ï¼Œå°±ä»Ž0x1f0ç«¯å£è¯»æ•°æ®
+```
+
+* å½“å‰ç¡¬ç›˜æ•°æ®æ˜¯å­˜å‚¨åˆ°ç¡¬ç›˜æ‰‡åŒºä¸­ï¼Œä¸€ä¸ªæ‰‡åŒºå¤§å°ä¸º512å­—èŠ‚ã€‚è¯»ä¸€ä¸ªæ‰‡åŒºçš„æµç¨‹å¤§è‡´å¦‚ä¸‹
+    * ç­‰å¾…ç£ç›˜å‡†å¤‡å¥½
+    * å‘å‡ºè¯»å–æ‰‡åŒºçš„å‘½ä»¤
+    * ç­‰å¾…ç£ç›˜å‡†å¤‡å¥½
+    * æŠŠæ‰‡åŒºæ•°æ®è¯»åˆ°æŒ‡å®šå†…å­˜
+
+
+* boot/bootmain.cä¸­å¯¹åº”ä»£ç å®žçŽ°ï¼š
 
 ```
 /* waitdisk - wait for disk ready */
@@ -240,14 +256,14 @@ readsect(void *dst, uint32_t secno) {
 }
 ```
 
-#### 4.2 bootloaderÈçºÎ¼ÓÔØELF¸ñÊ½µÄOS£¿
+#### 4.2 bootloaderå¦‚ä½•åŠ è½½ELFæ ¼å¼çš„OSï¼Ÿ
 
-* Ê×ÏÈ¶ÁÈ¡Ç°8¸ö´ÅÅÌÉÈÇøµÄÄÚÈÝµ½struct elfhdr½á¹¹µÄÖ¸ÕëELFHDRÖÐ¡£Í¨¹ýELFHDRÖÐµÄe_magicÅÐ¶Ï¶ÁÈ¡ÄÚÈÝÊÇ·ñÊÇELFÎÄ¼þ¸ñÊ½£»
-* Í¨¹ýELFHDRµÄe_phoff£¨program header±íÎ»ÖÃÆ«ÒÆ£©£¬»ñÈ¡µ½Program header±íµÄÈë¿ÚµØÖ·£¨ELFHDR + ELFHDR->e_phoff£©¡£½«Èë¿ÚµØÖ·×ª»»Îªstruct proghdr½á¹¹µÄÖ¸Õëph£¬´Ó¶ø¿ÉÒÔ¶ÁÈ¡µ½program header±íÖÐµÄÄÚÈÝ£»È»ºó¿ÉÒÔÍ¨¹ýe_phnum×Ö¶ÎµÃµ½program header±íµÄÈë¿ÚÊýÄ¿£¬ÕâÑù¾Í¿ÉÒÔÍ¨¹ýÖ¸ÕëÔËËãÒÀ´Î¶ÁÈ¡Ã¿¸öprogram header±íµÄÄÚÈÝ£»
-* ¸ù¾ÝÃ¿¸öprogram header±íÏîµÄÄÚÈÝ£¬´ÓÖ¸¶¨µÄÆ«ÒÆ´¦£¨ph->p_offset£©¶ÁÈ¡Ö¸¶¨´óÐ¡£¨ph->p_memsz£©µÄ´ÅÅÌÄÚÈÝµ½Ö¸¶¨µÄÄÚ´æµØÖ·´¦£¨ph->p_va£©£»´Ó¶øÍê³ÉOS³ÌÐòµÄ¼ÓÔØ£»
-* Ìø×ªµ½³ÌÐòÈë¿ÚµØÖ·´¦£¨ELFHDR->e_entry£©Ö´ÐÐ³ÌÐò£»
+* é¦–å…ˆè¯»å–å‰8ä¸ªç£ç›˜æ‰‡åŒºçš„å†…å®¹åˆ°struct elfhdrç»“æž„çš„æŒ‡é’ˆELFHDRä¸­ã€‚é€šè¿‡ELFHDRä¸­çš„e_magicåˆ¤æ–­è¯»å–å†…å®¹æ˜¯å¦æ˜¯ELFæ–‡ä»¶æ ¼å¼ï¼›
+* é€šè¿‡ELFHDRçš„e_phoffï¼ˆprogram headerè¡¨ä½ç½®åç§»ï¼‰ï¼ŒèŽ·å–åˆ°Program headerè¡¨çš„å…¥å£åœ°å€ï¼ˆELFHDR + ELFHDR->e_phoffï¼‰ã€‚å°†å…¥å£åœ°å€è½¬æ¢ä¸ºstruct proghdrç»“æž„çš„æŒ‡é’ˆphï¼Œä»Žè€Œå¯ä»¥è¯»å–åˆ°program headerè¡¨ä¸­çš„å†…å®¹ï¼›ç„¶åŽå¯ä»¥é€šè¿‡e_phnumå­—æ®µå¾—åˆ°program headerè¡¨çš„å…¥å£æ•°ç›®ï¼Œè¿™æ ·å°±å¯ä»¥é€šè¿‡æŒ‡é’ˆè¿ç®—ä¾æ¬¡è¯»å–æ¯ä¸ªprogram headerè¡¨çš„å†…å®¹ï¼›
+* æ ¹æ®æ¯ä¸ªprogram headerè¡¨é¡¹çš„å†…å®¹ï¼Œä»ŽæŒ‡å®šçš„åç§»å¤„ï¼ˆph->p_offsetï¼‰è¯»å–æŒ‡å®šå¤§å°ï¼ˆph->p_memszï¼‰çš„ç£ç›˜å†…å®¹åˆ°æŒ‡å®šçš„å†…å­˜åœ°å€å¤„ï¼ˆph->p_vaï¼‰ï¼›ä»Žè€Œå®ŒæˆOSç¨‹åºçš„åŠ è½½ï¼›
+* è·³è½¬åˆ°ç¨‹åºå…¥å£åœ°å€å¤„ï¼ˆELFHDR->e_entryï¼‰æ‰§è¡Œç¨‹åºï¼›
 
-* ´úÂëÈçÏÂ£º
+* ä»£ç å¦‚ä¸‹ï¼š
 ```
 void bootmain(void) {
     // read the 1st page off disk
@@ -280,16 +296,16 @@ bad:
 }
 ```
 
-## Prac5£ºÊµÏÖº¯Êýµ÷ÓÃ¶ÑÕ»¸ú×Ùº¯Êý
+## Prac5ï¼šå®žçŽ°å‡½æ•°è°ƒç”¨å †æ ˆè·Ÿè¸ªå‡½æ•°
 
-#### 5.1 ÊµÏÖº¯Êýprint_stackframe
+#### 5.1 å®žçŽ°å‡½æ•°print_stackframe
 
-* Ê×ÏÈÍ¨¹ýread_ebp()ºÍread_eip()»ñÈ¡µ±Ç°ebpºÍeip
-* µ±Ç°º¯ÊýµÄ²ÎÊýÁÐ±í´Óµ±Ç°ebpÎ»ÖÃÏòÉÏ8¸ö×Ö½Ú´¦£¨ (uint32_t *)ebp + 2£©¿ªÊ¼´æ´¢
-* ÉÏ´Îº¯Êýµ÷ÓÃÎ»ÖÃ£¨eip£©´æ´¢ÔÚµ±Ç°ebpÏòÉÏ4¸ö×Ö½Ú´¦£¬¼´((uint32_t *)ebp)[1]»ò(uint32_t *)ebp + 1
-* ÉÏ´Îº¯ÊýÕ»Ö¡Î»ÖÃ£¨ebp£©´æ´¢ÔÚµ±Ç°ebp´¦£¬¼´µ±Ç°ebpÎ»ÖÃµÄÖµ((uint32_t *)ebp)[0]¡£
-* ½«ÉÏ´ÎµÄebpºÍeip×÷Îªµ±Ç°ebpºÍeip£¬ÒÀ´Î´ËÑ­»·²Ù×÷£¬Ö±µ½×î³õµ÷ÓÃ£¨ebp == 0£©»òÕß×î´óÕ»Éî¶È£¨i >= STACKFRAME_DEPTH£©
-* ´úÂëÈçÏÂ£º
+* é¦–å…ˆé€šè¿‡read_ebp()å’Œread_eip()èŽ·å–å½“å‰ebpå’Œeip
+* å½“å‰å‡½æ•°çš„å‚æ•°åˆ—è¡¨ä»Žå½“å‰ebpä½ç½®å‘ä¸Š8ä¸ªå­—èŠ‚å¤„ï¼ˆ (uint32_t *)ebp + 2ï¼‰å¼€å§‹å­˜å‚¨
+* ä¸Šæ¬¡å‡½æ•°è°ƒç”¨ä½ç½®ï¼ˆeipï¼‰å­˜å‚¨åœ¨å½“å‰ebpå‘ä¸Š4ä¸ªå­—èŠ‚å¤„ï¼Œå³((uint32_t *)ebp)[1]æˆ–(uint32_t *)ebp + 1
+* ä¸Šæ¬¡å‡½æ•°æ ˆå¸§ä½ç½®ï¼ˆebpï¼‰å­˜å‚¨åœ¨å½“å‰ebpå¤„ï¼Œå³å½“å‰ebpä½ç½®çš„å€¼((uint32_t *)ebp)[0]ã€‚
+* å°†ä¸Šæ¬¡çš„ebpå’Œeipä½œä¸ºå½“å‰ebpå’Œeipï¼Œä¾æ¬¡æ­¤å¾ªçŽ¯æ“ä½œï¼Œç›´åˆ°æœ€åˆè°ƒç”¨ï¼ˆebp == 0ï¼‰æˆ–è€…æœ€å¤§æ ˆæ·±åº¦ï¼ˆi >= STACKFRAME_DEPTHï¼‰
+* ä»£ç å¦‚ä¸‹ï¼š
 
 ```
 void print_stackframe(void) {  
@@ -312,11 +328,11 @@ void print_stackframe(void) {
 
 ```
 
-## Prac6£ºÍêÉÆÖÐ¶Ï³õÊ¼»¯ºÍ´¦Àí
+## Prac6ï¼šå®Œå–„ä¸­æ–­åˆå§‹åŒ–å’Œå¤„ç†
 
-#### 6.1 ÖÐ¶ÏÃèÊö·û±í£¨ÖÐ¶ÏÏòÁ¿±í£©ÖÐÒ»¸ö±íÏîÕ¼¶àÉÙ×Ö½Ú£¿ ÆäÖÐÄÄ¼¸Î»´ú±íÖÐ¶Ï´¦Àí´úÂëµÄÈë¿Ú£¿
+#### 6.1 ä¸­æ–­æè¿°ç¬¦è¡¨ï¼ˆä¸­æ–­å‘é‡è¡¨ï¼‰ä¸­ä¸€ä¸ªè¡¨é¡¹å å¤šå°‘å­—èŠ‚ï¼Ÿ å…¶ä¸­å“ªå‡ ä½ä»£è¡¨ä¸­æ–­å¤„ç†ä»£ç çš„å…¥å£ï¼Ÿ
 
-* ÖÐ¶ÏÃèÊö·û±íÏîÊý¾Ý½á¹¹ÈçÏÂËùÊ¾£º
+* ä¸­æ–­æè¿°ç¬¦è¡¨é¡¹æ•°æ®ç»“æž„å¦‚ä¸‹æ‰€ç¤ºï¼š
 
 ```
 /* Gate descriptors for interrupts and traps */
@@ -333,18 +349,17 @@ struct gatedesc {
 };
 ```
 
-* ÓÉÉÏ¿ÉÖª£¬Ò»¸ö±íÏîÕ¼16+16+5+3+4+1+2+1+16=64×Ö½Ú
-* ÆäÖÐgd_ss´æ´¢segment selector£¬gd_off_15_0ºÍgd_off_31_16Îªoffset£¬Í¨¹ýÕâÐ©×Ö¶Î¿ÉÒÔÕÒµ½ÖÐ¶Ï´¦ÀíµÄÈë¿ÚÎ»ÖÃ¡£
+* ç”±ä¸Šå¯çŸ¥ï¼Œä¸€ä¸ªè¡¨é¡¹å 16+16+5+3+4+1+2+1+16=64å­—èŠ‚
+* å…¶ä¸­gd_sså­˜å‚¨segment selectorï¼Œgd_off_15_0å’Œgd_off_31_16ä¸ºoffsetï¼Œé€šè¿‡è¿™äº›å­—æ®µå¯ä»¥æ‰¾åˆ°ä¸­æ–­å¤„ç†çš„å…¥å£ä½ç½®ã€‚
 
 
-#### 6.2 ÍêÉÆÖÐ¶ÏÏòÁ¿±í³õÊ¼»¯º¯Êýidt_init¡£ÔÚidt_initº¯ÊýÖÐ£¬ÒÀ´Î¶ÔËùÓÐÖÐ¶ÏÈë¿Ú½øÐÐ³õÊ¼»¯¡£
+#### 6.2 å®Œå–„ä¸­æ–­å‘é‡è¡¨åˆå§‹åŒ–å‡½æ•°idt_initã€‚åœ¨idt_initå‡½æ•°ä¸­ï¼Œä¾æ¬¡å¯¹æ‰€æœ‰ä¸­æ–­å…¥å£è¿›è¡Œåˆå§‹åŒ–ã€‚
 
-* ÀûÓÃSETGATEºêÌî³äÃ»Ò»Ìõstruct gatedesc½á¹¹µÄÄÚÈÝ£¬ÆäÖÐ__vectorsÊý×éÖÐ´æ·Å×Å¶ÔÓ¦µÄÃ¿¸öÖÐ¶Ï·þÎñÀý³ÌµÄÆ«ÒÆµØÖ·
+* åˆ©ç”¨SETGATEå®å¡«å……æ²¡ä¸€æ¡struct gatedescç»“æž„çš„å†…å®¹ï¼Œå…¶ä¸­__vectorsæ•°ç»„ä¸­å­˜æ”¾ç€å¯¹åº”çš„æ¯ä¸ªä¸­æ–­æœåŠ¡ä¾‹ç¨‹çš„åç§»åœ°å€
 
-* ´úÂëÈçÏÂ
+* ä»£ç å¦‚ä¸‹ï¼š
 
 ```
-
 #define SETGATE(gate, istrap, sel, off, dpl) {            \
     (gate).gd_off_15_0 = (uint32_t)(off) & 0xffff;        \
     (gate).gd_ss = (sel);                                \
@@ -356,7 +371,9 @@ struct gatedesc {
     (gate).gd_p = 1;                                    \
     (gate).gd_off_31_16 = (uint32_t)(off) >> 16;        \
 }
+```
 
+```
 static struct gatedesc idt[256] = {{0}};
 
 /* idt_init - initialize IDT to each of the entry points in kern/trap/vectors.S */
@@ -374,16 +391,14 @@ void idt_init(void) {
 
 ```
 
-#### 6.3 ÍêÉÆÖÐ¶Ï´¦Àíº¯Êýtrap£¬¶ÔÊ±ÖÓÖÐ¶Ï½øÐÐ´¦Àí£¬Ê¹²Ù×÷ÏµÍ³Ã¿Óöµ½100´ÎÊ±ÖÓÖÐ¶Ïºó£¬µ÷ÓÃprint_ticks×Ó³ÌÐò£¬ÏòÆÁÄ»´òÓ¡Ò»ÐÐÎÄ×Ö¡£
+#### 6.3 å®Œå–„ä¸­æ–­å¤„ç†å‡½æ•°trapï¼Œå¯¹æ—¶é’Ÿä¸­æ–­è¿›è¡Œå¤„ç†ï¼Œä½¿æ“ä½œç³»ç»Ÿæ¯é‡åˆ°100æ¬¡æ—¶é’Ÿä¸­æ–­åŽï¼Œè°ƒç”¨print_tickså­ç¨‹åºï¼Œå‘å±å¹•æ‰“å°ä¸€è¡Œæ–‡å­—ã€‚
 
-* ËùÓÐµÄÖÐ¶Ïµ÷ÓÃ×îÖÕ»á×ßµ½trap_dispatchº¯ÊýÄÚ£¬È»ºóÔÙ¸ù¾ÝÖÐ¶ÏºÅ½øÐÐ·Ö·¢
-* ´úÂëÈçÏÂ£º
+* æ‰€æœ‰çš„ä¸­æ–­è°ƒç”¨æœ€ç»ˆä¼šèµ°åˆ°trap_dispatchå‡½æ•°å†…ï¼Œç„¶åŽå†æ ¹æ®ä¸­æ–­å·è¿›è¡Œåˆ†å‘
+* ä»£ç å¦‚ä¸‹ï¼š
 
 ```
-
 /* trap_dispatch - dispatch based on what type of trap occurred */
-static void
-trap_dispatch(struct trapframe *tf) {
+static void trap_dispatch(struct trapframe *tf) {
     char c;
 
     switch (tf->tf_trapno) {
