@@ -384,6 +384,10 @@
 #### 建立虚拟页和物理页帧的地址映射
 
 * 接着上节pmm_init函数，检查完物理内存页分配算法后，调用函数boot_alloc_page为页目录表分配物理内存空间
+	- 调用pmm->alloc_pages(1)为页目录表分配一个page
+	- 调用page2kva获取page的虚拟地址
+	- 设置boot_cr3的值为page的物理地址
+	
 	```
 	//boot_alloc_page - allocate one page using pmm->alloc_pages(1) 
 	// return value: the kernel virtual address of this allocated page
@@ -395,11 +399,17 @@
 	    }
 	    return page2kva(p);
 	}
+
+	static inline void *page2kva(struct Page *page) {
+	    return KADDR(page2pa(page));
+	}
 	```
 
 * 然后，调用boot_map_segment函数建立一一映射关系，即
 	
 	> virt addr = phy addr + 0xc000000
+
+	- 通过get_pte得到每一个线性地址所在页的页表项地址，然后设置页表项的地址为pa | PTE_P | perm
 
 	```
 	//boot_map_segment - setup&enable the paging mechanism
@@ -420,7 +430,171 @@
 	    }
 	}
 	```	
+	- get_pte:
+		- 根据线性地址得到目录表项地址
+		- 如果目录表项的内容为空(二级页表不存在)，则分配一个页，得到页物理地址pa，并设置目录表项的值：pa | PTE_U | PTE_W | PTE_P
+		- 返回该目录表项内的线性地址所对应的页表项的地址
+	
+	```
+	/* 
+	 * MACROs or Functions:
+	 *   PDX(la) = the index of page directory entry of VIRTUAL ADDRESS la.
+	 *   KADDR(pa) : takes a physical address and returns the corresponding kernel virtual address.
+	 *   set_page_ref(page,1) : means the page be referenced by one time
+	 *   page2pa(page): get the physical address of memory which this (struct Page *) page  manages
+	 *   struct Page * alloc_page() : allocation a page
+	 *   memset(void *s, char c, size_t n) : sets the first n bytes of the memory area pointed by s
+	 *                                       to the specified value c.
+	 * DEFINEs:
+	 *   PTE_P           0x001                   // page table/directory entry flags bit : Present
+	 *   PTE_W           0x002                   // page table/directory entry flags bit : Writeable
+	 *   PTE_U           0x004                   // page table/directory entry flags bit : User can access
+	 */
+
+	//get_pte - get pte and return the kernel virtual address of this pte for la
+	//        - if the PT contians this pte didn't exist, alloc a page for PT
+	// parameter:
+	//  pgdir:  the kernel virtual base address of PDT
+	//  la:     the linear address need to map
+	//  create: a logical value to decide if alloc a page for PT
+	// return vaule: the kernel virtual address of this pte
+	pte_t *get_pte(pde_t *pgdir, uintptr_t la, bool create) {
+	    pde_t *pdep = &pgdir[PDX(la)];
+	    if (!(*pdep & PTE_P)) {
+	        struct Page *page;
+	        if (!create || (page = alloc_page()) == NULL) {
+	            return NULL;
+	        }
+	        set_page_ref(page, 1);
+	        uintptr_t pa = page2pa(page);
+	        memset(KADDR(pa), 0, PGSIZE);
+	        *pdep = pa | PTE_U | PTE_W | PTE_P;
+	    }
+	    return &((pte_t *)KADDR(PDE_ADDR(*pdep)))[PTX(la)];
+	}
+	```
+
+* 建立好页表映射后，在调用enable_page函数到执行gdt_init函数之前，内核使用的还是旧的段表映射，即：
+
+	> virt addr = linear addr + 0xC0000000 = phy addr + 2 * 0xC0000000
+
+	- 这段时间，为了保证内核依然能够正常工作，需要让index为0的页目录项的内容等于以索引值为（KERNBASE>>22）的目录表项。 
+	- 目前内核大小不超过4M，从0x100000开始编址，这样就只需要让页表在0~4MB的线性地址与KERNBASE ~ KERNBASE+4MB的线性地址获得相同的映射即可，都映射到0~4MB的物理地址空间
+
+	```
+	/temporary map: 
+    //virtual_addr 3G~3G+4M = linear_addr 0~4M = linear_addr 3G~3G+4M = phy_addr 0~4M     
+    boot_pgdir[0] = boot_pgdir[PDX(KERNBASE)];
+	```
+
+* 接下来通过调用enable_paging函数使能分页机制。主要做两件事情：
+	- 通过lcr3指令把页目录表的起始地址存入CR3寄存器中
+	- 通过lcr0指令把cr0中的CR0_PG标志位设置上
+	
+	```
+	static void enable_paging(void) {
+	    lcr3(boot_cr3);
+	
+	    // turn on paging
+	    uint32_t cr0 = rcr0();
+	    cr0 |= CR0_PE | CR0_PG | CR0_AM | CR0_WP | CR0_NE | CR0_TS | CR0_EM | CR0_MP;
+	    cr0 &= ~(CR0_TS | CR0_EM);
+	    lcr0(cr0);
+	}
+	```
+
+* 执行完enable_paging函数后，计算机系统进入了分页模式。但目前还没有建立好完整的段页式映射。
+	- ucore在最开始设置的临时的段映射不是简单地对等映射，导致虚拟地址和线性地址不对等
+	- 所以，我们需要进一步调整段映射关系，重新设置GDT，建立对等映射
+	- 调用gdt_init函数，根据新的gdt全局段描述符表的内容，恢复简单的段对等映射关系，即：
+	
+	> virt addr = linear addr = phy addr + 0xC000000
+
+	```
+	/* gdt_init - initialize the default GDT and TSS */
+	static void gdt_init(void) {
+	    // set boot kernel stack and default SS0
+	    load_esp0((uintptr_t)bootstacktop);
+	    ts.ts_ss0 = KERNEL_DS;
+	
+	    // initialize the TSS filed of the gdt
+	    gdt[SEG_TSS] = SEGTSS(STS_T32A, (uintptr_t)&ts, sizeof(ts), DPL_KERNEL);
+	
+	    // reload all segment registers
+	    lgdt(&gdt_pd);
+	
+	    // load the TSS
+	    ltr(GD_TSS);
+	}
+	```
+
+* 执行完gdt_init后，新的段页式映射就建立好了。这时，上面设置的0-4M的线性地址与物理地址的映射关系已经没有用了，执行下面取消操作：
+	
+	```
+	 //disable the map of virtual_addr 0~4M
+    boot_pgdir[0] = 0;
+	```
 
 ## Prac3：释放某虚拟地址所在的页并取消对应二级页表项的映射
 
-xxx
+* page_remove函数提供了删除一个线性地址所对应的页的功能
+	
+	```
+	//page_remove - free an Page which is related linear address la and has an validated pte
+	void page_remove(pde_t *pgdir, uintptr_t la) {
+	    pte_t *ptep = get_pte(pgdir, la, 0);
+	    if (ptep != NULL) {
+	        page_remove_pte(pgdir, la, ptep);
+	    }
+	}
+	```
+	
+	- 首先根据线性地址获取页表项地址
+	- 如果该页表项存在，调用page_remove_pte函数清除除该页表项以及所对应页的内容
+
+* page_remove_pte:
+	- 如果页表项存在，获取页表项对应的页
+	- 递减页的引入计数，如果页的引用为0，释放该页
+	- 清空页表项内容
+	- 更新tlb
+
+	```
+	 /* check if ptep is valid, and tlb must be manually updated if mapping is updated
+	 *
+	 * Some Useful MACROs and DEFINEs, you can use them in below implementation.
+	 * MACROs or Functions:
+	 *   struct Page *page pte2page(*ptep): get the according page from the value of a ptep
+	 *   free_page : free a page
+	 *   page_ref_dec(page) : decrease page->ref. NOTICE: ff page->ref == 0 , then this page should be free.
+	 *   tlb_invalidate(pde_t *pgdir, uintptr_t la) : Invalidate a TLB entry, but only if the page tables being
+	 *                        edited are the ones currently in use by the processor.
+	 * DEFINEs:
+	 *   PTE_P           0x001                   // page table/directory entry flags bit : Present
+	 */
+    
+	//page_remove_pte - free an Page sturct which is related linear address la
+	//                - and clean(invalidate) pte which is related linear address la
+	//note: PT is changed, so the TLB need to be invalidate 
+	static inline void page_remove_pte(pde_t *pgdir, uintptr_t la, pte_t *ptep) {
+	    if (*ptep & PTE_P) {
+	        struct Page *page = pte2page(*ptep);
+	        if (page_ref_dec(page) == 0) {
+	            free_page(page);
+	        }
+	        *ptep = 0;
+	        tlb_invalidate(pgdir, la);
+	    }
+	}
+	```
+
+	```
+	//free_pages - call pmm->free_pages to free a continuous n*PAGESIZE memory 
+	void free_pages(struct Page *base, size_t n) {
+	    bool intr_flag;
+	    local_intr_save(intr_flag);
+	    {
+	        pmm_manager->free_pages(base, n);
+	    }
+	    local_intr_restore(intr_flag);
+	}
+	```
