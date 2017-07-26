@@ -474,6 +474,10 @@
 	}
 	```
 
+	- get_pte函数的调用关系图：
+
+	![get_pte](imgs/lab2_4.png)
+
 * 建立好页表映射后，在调用enable_page函数到执行gdt_init函数之前，内核使用的还是旧的段表映射，即：
 
 	> virt addr = linear addr + 0xC0000000 = phy addr + 2 * 0xC0000000
@@ -598,3 +602,7 @@
 	    local_intr_restore(intr_flag);
 	}
 	```
+	
+	- page_remove_pte的函数调用关系图
+
+	![page_remove_pte](imgs/lab2_5.png)
