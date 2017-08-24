@@ -55,7 +55,7 @@ static int create_server_proc(const char* ip, int port)
 	
 	if (bind(fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) ==  -1)
 	{
-		perror("bind error:");
+		perror("[SERVER] bind error: ");
 		return -1;
 	}
 
