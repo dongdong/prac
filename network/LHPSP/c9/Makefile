@@ -1,5 +1,5 @@
 CC=gcc
-OBJS=select_exception_demo epoll_ltet_demo epoll_oneshot_demo nonblock_connect_demo
+OBJS=select_exception_demo epoll_ltet_demo epoll_oneshot_demo nonblock_connect_demo chat_client
 
 all: $(OBJS)
 
@@ -14,6 +14,9 @@ epoll_oneshot_demo: epoll_oneshot_demo.c
 
 nonblock_connect_demo: nonblock_connect_demo.c
 	$(CC) -o nonblock_connect_demo nonblock_connect_demo.c
+
+chat_client: chat_client.c
+	$(CC) -o chat_client chat_client.c
 
 clean:
 	rm -rf $(OBJS)
