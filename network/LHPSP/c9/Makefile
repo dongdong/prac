@@ -1,5 +1,5 @@
 CC=gcc
-OBJS=select_exception_demo epoll_ltet_demo epoll_oneshot_demo
+OBJS=select_exception_demo epoll_ltet_demo epoll_oneshot_demo nonblock_connect_demo
 
 all: $(OBJS)
 
@@ -10,7 +10,10 @@ epoll_ltet_demo: epoll_ltet_demo.c
 	$(CC) -o epoll_ltet_demo epoll_ltet_demo.c
 
 epoll_oneshot_demo: epoll_oneshot_demo.c
-	$(CC) -o epoll_oneshot_demo epoll_oneshot_demo.c
+	$(CC) -o epoll_oneshot_demo epoll_oneshot_demo.c -lpthread
+
+nonblock_connect_demo: nonblock_connect_demo.c
+	$(CC) -o nonblock_connect_demo nonblock_connect_demo.c
 
 clean:
 	rm -rf $(OBJS)
