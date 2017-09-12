@@ -15,7 +15,7 @@
 
 #define BUFFER_SIZE 64
 
-int main()
+int main(int argc, char** argv)
 {
 	if (argc <= 2)
 	{
@@ -27,14 +27,15 @@ int main()
 
 	struct sockaddr_in server_address;
 	bzero(&server_address, sizeof(server_address));
+	server_address.sin_family = AF_INET;
 	inet_pton(AF_INET, ip, &server_address.sin_addr);
 	server_address.sin_port = htons(port);
 
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	assert(sockfd >= 0);
 	
-	int ret = connect(sockfd, (strcut sockaddr*)&server_address), 
-			sizeof(server_address);
+	int ret = connect(sockfd, (struct sockaddr*)&server_address, 
+			sizeof(server_address));
 	if (ret < 0)
 	{
 		perror("[CLIENT] connect failed");
@@ -42,8 +43,10 @@ int main()
 		return 1;
 	}
 
-	pollfd fds[2];
-	fds[0].fd = STDIN;
+	printf("[CLIENT] connect to server\n");
+
+	struct pollfd fds[2];
+	fds[0].fd = 0; //STDIN_FILENO;
 	fds[0].events = POLLIN;
 	fds[0].revents = 0;
 
@@ -65,7 +68,7 @@ int main()
 			break;
 		}
 
-		if (fds[1].revents & POLLRDUP)
+		if (fds[1].revents & POLLRDHUP)
 		{
 			printf("[CLIENT] server close the connection\n");
 			break;
@@ -81,24 +84,16 @@ int main()
 		
 		}
 
-		if (fds[0].revent & POLLIN)
+		if (fds[0].revents & POLLIN)
 		{
 			ret = splice(0, NULL, pipefd[1], NULL, 32768, 
 					SPLICE_F_MORE | SPLICE_F_MOVE);
 			ret = splice(pipefd[0], NULL, sockfd, NULL, 32768,
-					SPLICE_F_MORE | SPLICE_F_MOMVE);
+					SPLICE_F_MORE | SPLICE_F_MOVE);
 		}
 	}
 
 	close(sockfd);
 	return 0;
 }
-
-
-
-
-
-
-
-
 

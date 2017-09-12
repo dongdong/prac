@@ -1,3 +1,4 @@
+#define _GNU_SOURCE 1
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -50,11 +51,11 @@ int main(int argc, char* argv[])
 		assert(ret != -1);
 		
 		ret = splice(connfd, NULL, pipefd[1], NULL, 32768, 
-				/*SPLICE_F_MORE | SPLICE_F_MOVE*/5);
+				SPLICE_F_MORE | SPLICE_F_MOVE/*5*/);
 		assert(ret != -1);
 
 		ret = splice(pipefd[0], NULL, connfd, NULL, 32768,
-				/*SPLICE_F_MORE | SPLICE_F_MOVE*/5);
+				SPLICE_F_MORE | SPLICE_F_MOVE/*5*/);
 		assert(ret != -1);
 		
 		close(connfd);
