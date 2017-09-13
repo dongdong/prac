@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 	printf("[CLIENT] connect to server\n");
 
 	struct pollfd fds[2];
-	fds[0].fd = 0; //STDIN_FILENO;
+	fds[0].fd = STDIN_FILENO;
 	fds[0].events = POLLIN;
 	fds[0].revents = 0;
 
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 
 		if (fds[0].revents & POLLIN)
 		{
-			ret = splice(0, NULL, pipefd[1], NULL, 32768, 
+			ret = splice(STDIN_FILENO, NULL, pipefd[1], NULL, 32768, 
 					SPLICE_F_MORE | SPLICE_F_MOVE);
 			ret = splice(pipefd[0], NULL, sockfd, NULL, 32768,
 					SPLICE_F_MORE | SPLICE_F_MOVE);
