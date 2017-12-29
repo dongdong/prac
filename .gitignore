@@ -1,1 +1,2 @@
-data/ADSP/res/*/.ipynb_checkpoints/
+.ipynb_checkpoints/
+.DS_store
