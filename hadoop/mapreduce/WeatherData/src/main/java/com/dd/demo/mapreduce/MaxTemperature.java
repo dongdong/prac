@@ -9,10 +9,14 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
 public class MaxTemperature {
+
+    private static Logger log = LogManager.getLogger(MaxTemperature.class);
 
     public static void main(String[] args) throws Exception {
         if (args.length != 2) {
@@ -23,6 +27,8 @@ public class MaxTemperature {
         Job job = new Job();
         job.setJarByClass(MaxTemperature.class);
         job.setJobName("Max temperature");
+
+        log.info("[MaxTemperature] input: " + args[0] + ", output: " + args[1]);
 
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
@@ -36,7 +42,7 @@ public class MaxTemperature {
         System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
 
-    private class MaxTemperatureMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+    public static class MaxTemperatureMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 
         private static final int MISSING = 9999;
 
@@ -55,11 +61,13 @@ public class MaxTemperature {
             if (airTemperature != MISSING && quality.matches("[01459]")) {
                 context.write(new Text(year), new IntWritable(airTemperature));
             }
+
+            log.info("[MaxTemperatureMapper] Map finished!");
         }
 
     }
 
-    private class MaxTemperatureReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+    public static class MaxTemperatureReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 
         @Override
         public void reduce(Text key, Iterable<IntWritable> values, Context context)
@@ -69,6 +77,8 @@ public class MaxTemperature {
                 maxValue = Math.max(maxValue, value.get());
             }
             context.write(key, new IntWritable(maxValue));
+
+            log.info("[MaxTemperatureReducer] Reduce finished!");
         }
     }
 
