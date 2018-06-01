@@ -1,10 +1,10 @@
 import numpy as np
 import tensorflow as tf
-from sklearn.datasets import fetch_california_housing
+from california_housing_data import get_scaled_housing_data
 
-housing = fetch_california_housing()
+housing = get_scaled_housing_data()
 m,n = housing.data.shape
-print m, n
+print('shape', m, n)
 
 housing_data_plus_bias =  np.c_[np.ones((m, 1)), housing.data]
 
@@ -17,7 +17,7 @@ theta = tf.Variable(tf.random_uniform([n + 1, 1], -1.0, 1.0), name='theta')
 y_pred = tf.matmul(X, theta, name='predictions')
 error = y_pred - y
 mse = tf.reduce_mean(tf.square(error), name='mse')
-gradients = 2.0 / m * tf.matmul(tf.transpose(X), error)
+gradients = tf.matmul(tf.transpose(X), error) / m
 training_op = tf.assign(theta, theta - learning_rate * gradients)
 
 init = tf.global_variables_initializer()
@@ -26,8 +26,12 @@ with tf.Session() as sess:
     sess.run(init)
     for epoch in range(n_epochs):
         if epoch % 100 == 0:
-            print "Epoch", epoch, "MSE = ", mse.eval()
+            print("Epoch", epoch, "MSE = ", mse.eval())
         sess.run(training_op)
     best_theta = theta.eval()
-    print best_theta
+    print(best_theta)
 
+    #print('y', y.eval())
+    #print('y_pred', y_pred.eval())
+    print('error', error.eval())
+    print('mse', mse.eval())

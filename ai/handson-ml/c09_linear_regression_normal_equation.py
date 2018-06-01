@@ -1,10 +1,10 @@
 import numpy as np
 import tensorflow as tf
-from sklearn.datasets import fetch_california_housing
+from california_housing_data import get_housing_data
 
-housing = fetch_california_housing()
+housing = get_housing_data()
 m,n = housing.data.shape
-print m, n
+print('shape', m, n)
 
 housing_data_plus_bias =  np.c_[np.ones((m, 1)), housing.data]
 
@@ -18,8 +18,9 @@ mse = tf.reduce_mean(tf.square(error))
 
 with tf.Session() as sess:
     theta_value = theta.eval()
-    print theta_value
+    print(theta_value)
 
-    print y.eval()
-    print y_pred.eval()
-    print mse.eval()
+    #print('y', y.eval())
+    #print('y_pred', y_pred.eval())
+    print('error', error.eval())
+    print('mse', mse.eval())
