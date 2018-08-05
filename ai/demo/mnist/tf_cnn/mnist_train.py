@@ -16,7 +16,7 @@ MOVING_AVERAGE_DECAY = 0.99
 
 DATA_PATH="../dataset/"
 MODEL_SAVE_PATH = "model/"
-MODEL_NAME = "mnist_tf_dnn.ckpt"
+MODEL_NAME = "mnist_tf_cnn.ckpt"
 
 def train(mnist):
     x = tf.placeholder(
@@ -39,8 +39,8 @@ def train(mnist):
         tf.trainable_variables())
     cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
         logits=y, labels=tf.argmax(y_, 1))
-    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(
-        logits=y, labels=y_)
+    #cross_entropy = tf.nn.softmax_cross_entropy_with_logits(
+    #    logits=y, labels=y_)
     cross_entropy_mean = tf.reduce_mean(cross_entropy)
     loss = cross_entropy_mean + tf.add_n(tf.get_collection('losses'))
     learning_rate = tf.train.exponential_decay(

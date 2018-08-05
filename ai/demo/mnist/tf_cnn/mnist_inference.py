@@ -82,7 +82,7 @@ def inference(input_tensor, regularizer=None):
         fc1_biases = tf.get_variable(
             "bias",
             [FC_SIZE],
-            initializer=tf.constant_initializer(0.1))
+            initializer=tf.constant_initializer(0.0))
         fc1 = tf.nn.relu(tf.matmul(reshaped, fc1_weights) + fc1_biases)
         if train: 
             fc1 = tf.nn.dropout(fc1, 0.5)
@@ -97,7 +97,7 @@ def inference(input_tensor, regularizer=None):
         fc2_biases = tf.get_variable(
             "bias",
             [NUM_LABELS],
-            initializer=tf.constant_initializer(0.1))
+            initializer=tf.constant_initializer(0.0))
         logit = tf.matmul(fc1, fc2_weights) + fc2_biases
 
     return logit
