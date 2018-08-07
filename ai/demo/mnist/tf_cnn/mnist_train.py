@@ -8,7 +8,7 @@ from utils.datasets import input_data
 import mnist_inference
 
 BATCH_SIZE = 100
-LEARNING_RATE_BASE = 0.8
+LEARNING_RATE_BASE = 0.01 #0.8
 LEARNING_RATE_DECAY = 0.99
 REGULARAZATION_RATE = 0.0001
 TRAINING_STEPS = 30000
