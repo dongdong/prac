@@ -4,6 +4,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 import torchvision
 import torchvision.transforms as transforms
+from torch import nn
+import zipfile
 
 
 def use_svg_display():
@@ -92,3 +94,32 @@ def load_data_fashion_mnist(batch_size=256):
         num_workers=num_workers
     )
     return train_iter, test_iter
+
+class FlattenLayer(nn.Module):
+    def __init__(self):
+        super(FlattenLayer, self).__init__()
+    def forward(self, x):
+        return x.view(x.shape[0], -1)
+    
+    
+def sgd(params, lr, batch_size):
+    #print("sgd, lr %f, batch_size, %d" % 
+    #      (lr, batch_size))
+    for param in params:
+        param.data -= lr * param.grad / batch_size
+
+        
+def load_data_jay_lyrics():
+    data_path = 'data/jaychou_lyrics.txt.zip'
+    with zipfile.ZipFile(data_path) as zin:
+        with zin.open('jaychou_lyrics.txt') as f:
+            corpus_chars = f.read().decode('utf-8')
+    corpus_chars = corpus_chars.replace('\n', ' ').replace('\r', ' ')
+    #corpus_chars = corpus_chars[0:10000]
+    idx_to_char = list(set(corpus_chars))
+    char_to_idx = dict([(char, i) 
+                        for i, char in enumerate(idx_to_char)])
+    vocab_size = len(char_to_idx)
+    corpus_indices = [char_to_idx[char] 
+                  for char in corpus_chars]
+    return corpus_indices, char_to_idx, idx_to_char, vocab_size
