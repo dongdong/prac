@@ -21,6 +21,13 @@ class GlobalAvgPool2d(nn.Module):
         return F.avg_pool2d(x, kernel_size=x.size()[2:])
 
 
+def sgd(params, lr, batch_size):
+    #print("sgd, lr %f, batch_size, %d" % 
+    #      (lr, batch_size))
+    for param in params:
+        param.data -= lr * param.grad / batch_size
+    
+    
 def get_fashion_mnist_labels(labels):
     text_labels = [
         't-shirt',
@@ -146,10 +153,6 @@ def load_data_jay_lyrics():
 
 def data_iter_random(corpus_indices, batch_size, 
                      num_steps, device=None):
-    ''' 每次从数据里随机采样一个小批量
-        batch_size：每个小批量的样本数
-        num_steps：每个样本所包含的时间步数
-    '''
     num_examples = (len(corpus_indices) - 1) // num_steps
     epoch_size = num_examples // batch_size
     example_indices = list(range(num_examples))
@@ -240,7 +243,7 @@ def grad_clipping(params, theta, device):
             
          
 def train_and_predict_rnn(rnn, get_params, init_rnn_state,
-                         num_hiddnes, vocab_size, 
+                         num_hiddens, vocab_size, 
                          device, corpus_indices, 
                          idx_to_char, char_to_idx,
                          is_random_iter, num_epochs,
@@ -287,7 +290,7 @@ def train_and_predict_rnn(rnn, get_params, init_rnn_state,
                     
             l.backward()
             grad_clipping(params, clipping_theta, device)
-            d2l.sgd(params, lr, l)
+            sgd(params, lr, l)
             l_sum += l.item() * y.shape[0]
             n += y.shape[0]
         
