@@ -6,6 +6,8 @@ import torchvision
 import torchvision.transforms as transforms
 import time
 import zipfile
+import random
+import math
 
 class FlattenLayer(nn.Module):
     def __init__(self):
@@ -136,7 +138,7 @@ def train_ch5(net, train_iter, test_iter, batch_size,
 
         
 def load_data_jay_lyrics():
-    data_path = 'data/jaychou_lyrics.txt.zip'
+    data_path = '../data/jaychou_lyrics.txt.zip'
     with zipfile.ZipFile(data_path) as zin:
         with zin.open('jaychou_lyrics.txt') as f:
             corpus_chars = f.read().decode('utf-8')
@@ -250,6 +252,8 @@ def train_and_predict_rnn(rnn, get_params, init_rnn_state,
                          num_steps, lr, clipping_theta, 
                          batch_size, pred_period, pred_len,
                          prefixes):
+    print('train_and_predict_rnn. batch_size: %d, num_hidden: %d, lr: %f' % 
+        (batch_size, num_hiddens, lr))
     if is_random_iter:
         data_iter_fn = data_iter_random
     else:
@@ -280,8 +284,7 @@ def train_and_predict_rnn(rnn, get_params, init_rnn_state,
             inputs = to_onehot(X, vocab_size)
             (outputs, state) = rnn(inputs, state, params)
             outputs = torch.cat(outputs, dim=0)
-            y = torch.transpose(Y, 0, 1).contiguous(
-                    ).view(-1)
+            y = torch.transpose(Y, 0, 1).contiguous().view(-1)
             l = loss(outputs, y.long())
             
             if params[0].grad is not None:
@@ -309,11 +312,10 @@ class RNNModel(nn.Module):
     def __init__(self, rnn_layer, vocab_size):
         super(RNNModel, self).__init__()
         self.rnn = rnn_layer
-        self.hidden_size = rnn_layer.hidden_size * (2 if
-                rnn_layer.bidirectional else 1)
+        self.hidden_size = rnn_layer.hidden_size * (
+                2 if rnn_layer.bidirectional else 1)
         self.vocab_size = vocab_size
-        self.dense = nn.Linear(self.hidden_size, 
-                               vocab_size)
+        self.dense = nn.Linear(self.hidden_size, vocab_size)
         self.state = None
     
     def forward(self, inputs, state): 
