@@ -402,3 +402,39 @@ def train_and_predict_rnn_pytorch(model, num_hiddens,
                         device, idx_to_char, char_to_idx)
                      )
                 
+
+
+def train(train_iter, test_iter, net, loss, optimizer, device, num_epochs):
+    net = net.to(device)
+    print('training on', device)
+    batch_count = 0
+    for epoch in range(num_epochs):
+        train_l_sum, train_acc_sum, n, start = 0.0, 0.0, 0, time.time()
+        for X, y in train_iter:
+            X = X.to(device)
+            y = y.to(device)
+            y_hat = net(X)
+            l = loss(y_hat, y)
+            optimizer.zero_grad()
+            l.backward()
+            optimizer.step()
+            train_l_sum += l.cpu().item()
+            train_acc_sum += (y_hat.argmax(dim=1) == y).sum().cpu().item()
+            n += y.shape[0]
+            batch_count += 1
+        test_acc = evaluate_accuracy(test_iter, net, device)
+        print('epoch %d, loss %.4f, train acc %.3f, test acc %.3f, time: %.1f' % (
+                epoch + 1, train_l_sum/batch_count, train_acc_sum / n, test_acc, 
+                time.time() - start))
+
+
+
+
+
+
+
+
+
+
+
+
